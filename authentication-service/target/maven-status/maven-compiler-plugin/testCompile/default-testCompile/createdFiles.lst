@@ -1,0 +1,5 @@
+microservice\authenticationservice\com\AuthServiceApplicationTests.class
+microservice\authenticationservice\com\service\AuthServiceImplTest.class
+microservice\authenticationservice\com\controller\AppUserControllerTest.class
+microservice\authenticationservice\com\service\AppUserServiceImplTest.class
+microservice\authenticationservice\com\controller\AuthControllerTest.class

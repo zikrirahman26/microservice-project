@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: microservice.authenticationservice.com.AuthServiceApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 23.61 s -- in microservice.authenticationservice.com.AuthServiceApplicationTests

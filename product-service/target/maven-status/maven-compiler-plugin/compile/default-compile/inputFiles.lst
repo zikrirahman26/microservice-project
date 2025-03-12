@@ -1,0 +1,9 @@
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\controller\ProductController.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\dto\ApiResponse.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\dto\ProductRequest.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\dto\ProductResponse.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\entity\Product.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\exception\GlobalExceptionHandler.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\ProductServiceApplication.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\repository\ProductRepository.java
+D:\zikri\source-code\microservice\product-service\src\main\java\microservice\productservice\com\service\ProductService.java

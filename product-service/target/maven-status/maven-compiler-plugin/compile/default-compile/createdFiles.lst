@@ -1,0 +1,12 @@
+microservice\productservice\com\controller\ProductController.class
+microservice\productservice\com\dto\ApiResponse.class
+microservice\productservice\com\dto\ProductRequest$ProductRequestBuilder.class
+microservice\productservice\com\service\ProductService.class
+microservice\productservice\com\repository\ProductRepository.class
+microservice\productservice\com\ProductServiceApplication.class
+microservice\productservice\com\entity\Product.class
+microservice\productservice\com\dto\ApiResponse$ApiResponseBuilder.class
+microservice\productservice\com\dto\ProductResponse.class
+microservice\productservice\com\dto\ProductResponse$ProductResponseBuilder.class
+microservice\productservice\com\exception\GlobalExceptionHandler.class
+microservice\productservice\com\dto\ProductRequest.class
