@@ -1,5 +1,6 @@
 package microservice.authenticationservice.com.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import microservice.authenticationservice.com.dto.RegistrationRequest;
 import microservice.authenticationservice.com.dto.AppUserResponse;
@@ -24,8 +25,12 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
     private final ValidationRequest validationRequest;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Transactional
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        validationRequest.validationRequest(username);
+
         AppUser appUser = appUserRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
 
@@ -35,6 +40,7 @@ public class AppUserServiceImpl implements AppUserService, UserDetailsService {
                 .build();
     }
 
+    @Transactional
     @Override
     public AppUserResponse userRegistration(RegistrationRequest registrationRequest) {
 

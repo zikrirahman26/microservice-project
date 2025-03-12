@@ -29,7 +29,7 @@ public class ProductController {
                 .build());
     }
 
-    @PutMapping("/update/{id}")
+    @PatchMapping("/update/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
         ProductResponse productResponse = productService.updateProduct(productRequest, id);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<ProductResponse>builder()

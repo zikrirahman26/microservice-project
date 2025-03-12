@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public final class JwtGenerator {
@@ -23,6 +20,10 @@ public final class JwtGenerator {
 
     private Key getSignKey() {
         byte[] keyBytes = Base64.getDecoder().decode(SECRET_KEY);
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("Secret key must be at least 256 bits (32 bytes) for HS256.");
+        }
+
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -34,16 +35,14 @@ public final class JwtGenerator {
         return claims;
     }
 
-    public Date getExpirationDate() {
-        return new Date(System.currentTimeMillis() + EXPIRATION_KEY);
-    }
-
     public String generateToken(AppUser appUser) {
         return Jwts.builder()
+                .setHeaderParam("alg", "HS256")
+                .setHeaderParam("typ", "JWT")
                 .setClaims(createClaims(appUser))
                 .setSubject(String.valueOf(appUser.getId()))
                 .setIssuedAt(new Date())
-                .setExpiration(getExpirationDate())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_KEY))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

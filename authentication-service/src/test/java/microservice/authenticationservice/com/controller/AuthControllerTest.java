@@ -2,6 +2,7 @@ package microservice.authenticationservice.com.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import microservice.authenticationservice.com.dto.ApiResponse;
+import microservice.authenticationservice.com.dto.ChangePasswordRequest;
 import microservice.authenticationservice.com.dto.LoginRequest;
 import microservice.authenticationservice.com.dto.TokenResponse;
 import microservice.authenticationservice.com.service.AuthService;
@@ -16,7 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,6 +37,8 @@ class AuthControllerTest {
     private ObjectMapper objectMapper;
     private LoginRequest loginRequest;
     private TokenResponse tokenResponse;
+    private ChangePasswordRequest changePasswordRequest;
+
 
     @BeforeEach
     void setUp() {
@@ -41,12 +46,16 @@ class AuthControllerTest {
         objectMapper = new ObjectMapper();
 
         loginRequest = new LoginRequest();
-        loginRequest.setUsername("testuser");
+        loginRequest.setUsername("testUser");
         loginRequest.setPassword("password");
 
         tokenResponse = TokenResponse.builder()
                 .token("testToken")
                 .build();
+
+        changePasswordRequest = new ChangePasswordRequest();
+        changePasswordRequest.setOldPassword("oldPass123");
+        changePasswordRequest.setNewPassword("newPass456");
     }
 
     @Test
@@ -72,6 +81,24 @@ class AuthControllerTest {
         mockMvc.perform(post("/api-auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(content().json(expectedResponse));
+    }
+
+    @Test
+    void changePassword_ValidRequest_ReturnsCorrectResponse() throws Exception {
+        String username = "testUser";
+
+        doNothing().when(authService).changePassword(any(ChangePasswordRequest.class), any(String.class));
+
+        String expectedResponse = objectMapper.writeValueAsString(ApiResponse.<String>builder()
+                .data(null)
+                .message("Password changed successfully")
+                .build());
+
+        mockMvc.perform(patch("/api-auth/change-password/{username}", username)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(changePasswordRequest)))
+                .andExpect(status().isOk())
                 .andExpect(content().json(expectedResponse));
     }
 }
