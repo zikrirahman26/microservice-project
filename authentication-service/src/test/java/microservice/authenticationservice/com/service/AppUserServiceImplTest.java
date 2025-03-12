@@ -23,8 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AppUserServiceImplTest {
@@ -101,13 +100,9 @@ class AppUserServiceImplTest {
     void userRegistration_UsernameExists_ThrowsBadRequest() {
         when(appUserRepository.existsByUsername("testuser")).thenReturn(true);
 
-        assertThrows(ResponseStatusException.class, () -> appUserServiceImpl.userRegistration(registrationRequest));
-        try {
-            appUserServiceImpl.userRegistration(registrationRequest);
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
-            assertEquals("Username is already in use", e.getReason());
-        }
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> appUserServiceImpl.userRegistration(registrationRequest));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Username is already in use", exception.getReason());
     }
 
     @Test
@@ -115,12 +110,8 @@ class AppUserServiceImplTest {
         when(appUserRepository.existsByUsername("testuser")).thenReturn(false);
         when(appUserRepository.existsByEmail("test@example.com")).thenReturn(true);
 
-        assertThrows(ResponseStatusException.class, () -> appUserServiceImpl.userRegistration(registrationRequest));
-        try {
-            appUserServiceImpl.userRegistration(registrationRequest);
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
-            assertEquals("Email is already in use", e.getReason());
-        }
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> appUserServiceImpl.userRegistration(registrationRequest));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Email is already in use", exception.getReason());
     }
 }

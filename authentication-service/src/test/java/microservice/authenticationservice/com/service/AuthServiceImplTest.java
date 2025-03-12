@@ -4,10 +4,10 @@ import microservice.authenticationservice.com.dto.ChangePasswordRequest;
 import microservice.authenticationservice.com.dto.LoginRequest;
 import microservice.authenticationservice.com.dto.TokenResponse;
 import microservice.authenticationservice.com.entity.AppUser;
-import microservice.authenticationservice.com.model.AppUserRole;
 import microservice.authenticationservice.com.repository.AppUserRepository;
 import microservice.authenticationservice.com.service.impl.AuthServiceImpl;
 import microservice.authenticationservice.com.utils.JwtGenerator;
+import microservice.authenticationservice.com.validation.ValidationRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +43,9 @@ class AuthServiceImplTest {
     @Mock
     private JwtGenerator jwtGenerator;
 
+    @Mock
+    private ValidationRequest validationRequest;
+
     @InjectMocks
     private AuthServiceImpl authServiceImpl;
 
@@ -52,23 +55,21 @@ class AuthServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        loginRequest = new LoginRequest();
-        loginRequest.setUsername("testuser");
-        loginRequest.setPassword("password");
+        loginRequest = new LoginRequest("testUser", "password");
 
         appUser = new AppUser();
-        appUser.setUsername("testuser");
+        appUser.setUsername("testUser");
         appUser.setPassword("encodedPassword");
-        appUser.setAppUserRole(AppUserRole.USER);
 
         changePasswordRequest = new ChangePasswordRequest();
         changePasswordRequest.setOldPassword("oldPassword");
         changePasswordRequest.setNewPassword("newPassword");
+        changePasswordRequest.setConfirmPassword("newPassword");
     }
 
     @Test
     void login_ValidCredentials_ReturnsTokenResponse() {
-        when(appUserRepository.findByUsername("testuser")).thenReturn(Optional.of(appUser));
+        when(appUserRepository.findByUsername("testUser")).thenReturn(Optional.of(appUser));
         when(jwtGenerator.generateToken(appUser)).thenReturn("testToken");
 
         TokenResponse response = authServiceImpl.login(loginRequest);
@@ -80,32 +81,28 @@ class AuthServiceImplTest {
 
     @Test
     void login_InvalidCredentials_ThrowsUnauthorized() {
-        when(appUserRepository.findByUsername("testuser")).thenReturn(Optional.of(appUser));
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenThrow(new BadCredentialsException(""));
+        when(appUserRepository.findByUsername("testUser")).thenReturn(Optional.of(appUser));
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException(""));
 
-        assertThrows(ResponseStatusException.class, () -> authServiceImpl.login(loginRequest));
-        try{
-            authServiceImpl.login(loginRequest);
-        }catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
-            assertEquals("Password incorrect", e.getReason());
-        }
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authServiceImpl.login(loginRequest));
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals("Password incorrect", exception.getReason());
     }
 
     @Test
     void login_UserNotFound_ThrowsUsernameNotFoundException() {
-        when(appUserRepository.findByUsername("nonexistentuser")).thenReturn(Optional.empty());
-
-        assertThrows(UsernameNotFoundException.class, () -> authServiceImpl.login(new LoginRequest("nonexistentuser", "password")));
+        when(appUserRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+        assertThrows(UsernameNotFoundException.class, () -> authServiceImpl.login(new LoginRequest("nonexistent", "password")));
     }
 
     @Test
     void changePassword_ValidRequest_PasswordChanged() {
-        when(appUserRepository.findByUsername("testuser")).thenReturn(Optional.of(appUser));
+        when(appUserRepository.findByUsername("testUser")).thenReturn(Optional.of(appUser));
         when(bCryptPasswordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(true);
         when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
 
-        authServiceImpl.changePassword(changePasswordRequest, "testuser");
+        authServiceImpl.changePassword(changePasswordRequest, "testUser");
 
         assertEquals("newEncodedPassword", appUser.getPassword());
         verify(appUserRepository).save(appUser);
@@ -113,37 +110,39 @@ class AuthServiceImplTest {
 
     @Test
     void changePassword_UserNotFound_ThrowsUsernameNotFoundException() {
-        when(appUserRepository.findByUsername("nonexistentuser")).thenReturn(Optional.empty());
-
-        assertThrows(UsernameNotFoundException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "nonexistentuser"));
+        when(appUserRepository.findByUsername("nonexistent")).thenReturn(Optional.empty());
+        assertThrows(UsernameNotFoundException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "nonexistent"));
     }
 
     @Test
     void changePassword_InvalidOldPassword_ThrowsUnauthorized() {
-        when(appUserRepository.findByUsername("testuser")).thenReturn(Optional.of(appUser));
+        when(appUserRepository.findByUsername("testUser")).thenReturn(Optional.of(appUser));
         when(bCryptPasswordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(false);
 
-        assertThrows(ResponseStatusException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "testuser"));
-        try{
-            authServiceImpl.changePassword(changePasswordRequest, "testuser");
-        }catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
-            assertEquals("Old password incorrect", e.getReason());
-        }
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "testUser"));
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals("Old password incorrect", exception.getReason());
     }
 
     @Test
     void changePassword_SameNewPassword_ThrowsUnauthorized() {
-        when(appUserRepository.findByUsername("testuser")).thenReturn(Optional.of(appUser));
+        when(appUserRepository.findByUsername("testUser")).thenReturn(Optional.of(appUser));
         when(bCryptPasswordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(true);
         changePasswordRequest.setNewPassword("oldPassword");
 
-        assertThrows(ResponseStatusException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "testuser"));
-        try{
-            authServiceImpl.changePassword(changePasswordRequest, "testuser");
-        }catch(ResponseStatusException e){
-            assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
-            assertEquals("New password cannot be the same", e.getReason());
-        }
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "testUser"));
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals("New password cannot be the same", exception.getReason());
+    }
+
+    @Test
+    void changePassword_ConfirmPasswordMismatch_ThrowsUnauthorized() {
+        when(appUserRepository.findByUsername("testUser")).thenReturn(Optional.of(appUser));
+        when(bCryptPasswordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(true);
+        changePasswordRequest.setConfirmPassword("wrongPassword");
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> authServiceImpl.changePassword(changePasswordRequest, "testUser"));
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        assertEquals("Confirm password incorrect", exception.getReason());
     }
 }

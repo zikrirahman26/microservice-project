@@ -19,7 +19,7 @@ public class AppUserController {
     @PostMapping("/registration")
     public ResponseEntity<ApiResponse<AppUserResponse>> userRegistration(@RequestBody RegistrationRequest registrationRequest) {
         AppUserResponse appUserResponse = appUserService.userRegistration(registrationRequest);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<AppUserResponse>builder()
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.<AppUserResponse>builder()
                         .data(appUserResponse)
                         .message("User registration successfully")
                 .build());

@@ -42,7 +42,7 @@ class AppUserControllerTest {
         objectMapper = new ObjectMapper();
 
         registrationRequest = new RegistrationRequest();
-        registrationRequest.setUsername("testuser");
+        registrationRequest.setUsername("testUser");
         registrationRequest.setEmail("test@example.com");
         registrationRequest.setPassword("password");
         registrationRequest.setFullName("Test User");
@@ -50,7 +50,7 @@ class AppUserControllerTest {
         registrationRequest.setAppUserRole(AppUserRole.USER);
 
         appUserResponse = AppUserResponse.builder()
-                .username("testuser")
+                .username("testUser")
                 .email("test@example.com")
                 .fullName("Test User")
                 .phoneNumber("1234567890")
@@ -60,13 +60,13 @@ class AppUserControllerTest {
     }
 
     @Test
-    void userRegistration_ValidRequest_ReturnsOk() throws Exception {
+    void userRegistration_ValidRequest_ReturnsCreated() throws Exception {
         when(appUserService.userRegistration(any(RegistrationRequest.class))).thenReturn(appUserResponse);
 
         mockMvc.perform(post("/api-users/registration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registrationRequest)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
