@@ -15,6 +15,8 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private static final String test = "";
+    private static final String test2 = "test2";
     private static final String test1 = "test1";
 
     public ProductController(ProductService productService) {
