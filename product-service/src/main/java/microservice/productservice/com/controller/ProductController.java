@@ -13,11 +13,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api-products")
 public class ProductController {
-    //gvfgvhgasv
-    //development
 
     private final ProductService productService;
     private static final String test = "";
+    private static final String test2 = "test2";
 
     public ProductController(ProductService productService) {
         this.productService = productService;
